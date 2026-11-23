@@ -1,5 +1,7 @@
 name: render
 on:
+  push:
+    paths: [".github/workflows/render.yml"]
   schedule:
     - cron: "*/10 * * * *" # poll the store API for queued render jobs (free on a public repo)
   workflow_dispatch:
