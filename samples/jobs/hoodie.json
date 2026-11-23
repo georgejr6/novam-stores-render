@@ -1,35 +1,30 @@
 {
+ "v": 2,
+ "scene": 2,
  "type": "hoodie",
+ "providerProductId": 380,
  "placement": "front",
- "printArea": {
-  "w": 1800,
-  "h": 1800,
-  "dpi": 150
- },
  "colors": [
   {
    "name": "Black",
-   "hex": "#101012",
+   "hex": "#080808",
+   "variantId": 10780,
    "shots": [
     "flat",
     "angle",
     "detail",
     "styled",
-    "label"
+    "model"
    ]
   }
  ],
- "logoPath": "../sample-logo.png",
+ "logoUrl": "https://raw.githubusercontent.com/georgejr6/novam-stores-render/master/samples/sol-atlas-on-dark.png",
  "brand": {
-  "accent": "#E4572E",
-  "ink": "#1D2A3A"
+  "accent": "#e4572e",
+  "ink": "#1d2a3a"
  },
  "size": [
-  1200,
-  1500
- ],
- "samples": 24,
- "labelPath": "../sample-label.png",
- "labelWIn": 3.0,
- "labelHIn": 1.13
+  1000,
+  1000
+ ]
 }

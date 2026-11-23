@@ -1,31 +1,29 @@
 {
+ "v": 2,
+ "scene": 2,
  "type": "poster",
+ "providerProductId": 1,
  "placement": "default",
- "printArea": {
-  "w": 4962,
-  "h": 3507,
-  "dpi": 300
- },
  "colors": [
   {
-   "name": "White",
-   "hex": "#F6F4EE",
+   "name": "Paper",
+   "hex": "#cccccc",
+   "variantId": 1,
    "shots": [
     "flat",
+    "styled",
     "angle",
-    "detail",
-    "styled"
+    "detail"
    ]
   }
  ],
- "logoPath": "../sample-logo.png",
+ "logoUrl": "https://raw.githubusercontent.com/georgejr6/novam-stores-render/master/samples/sol-atlas-poster.png",
  "brand": {
-  "accent": "#E4572E",
-  "ink": "#1D2A3A"
+  "accent": "#e4572e",
+  "ink": "#1d2a3a"
  },
  "size": [
-  1200,
-  1500
- ],
- "samples": 24
+  1000,
+  1000
+ ]
 }

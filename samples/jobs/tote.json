@@ -1,31 +1,28 @@
 {
+ "v": 2,
+ "scene": 2,
  "type": "tote",
+ "providerProductId": 367,
  "placement": "front",
- "printArea": {
-  "w": 1500,
-  "h": 1500,
-  "dpi": 150
- },
  "colors": [
   {
-   "name": "Natural",
-   "hex": "#E7DCC4",
+   "name": "Oyster",
+   "hex": "#edcea5",
+   "variantId": 10458,
    "shots": [
     "flat",
     "angle",
-    "detail",
     "styled"
    ]
   }
  ],
- "logoPath": "../sample-logo.png",
+ "logoUrl": "https://raw.githubusercontent.com/georgejr6/novam-stores-render/master/samples/sol-atlas-on-light.png",
  "brand": {
-  "accent": "#E4572E",
-  "ink": "#1D2A3A"
+  "accent": "#e4572e",
+  "ink": "#1d2a3a"
  },
  "size": [
-  1200,
-  1500
- ],
- "samples": 24
+  1000,
+  1000
+ ]
 }

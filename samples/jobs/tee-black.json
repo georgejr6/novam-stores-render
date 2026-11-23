@@ -1,0 +1,30 @@
+{
+ "v": 2,
+ "scene": 2,
+ "type": "tee",
+ "providerProductId": 71,
+ "placement": "front",
+ "colors": [
+  {
+   "name": "Black",
+   "hex": "#0c0c0c",
+   "variantId": 4017,
+   "shots": [
+    "flat",
+    "angle",
+    "detail",
+    "styled",
+    "model"
+   ]
+  }
+ ],
+ "logoUrl": "https://raw.githubusercontent.com/georgejr6/novam-stores-render/master/samples/sol-atlas-on-dark.png",
+ "brand": {
+  "accent": "#e4572e",
+  "ink": "#1d2a3a"
+ },
+ "size": [
+  1000,
+  1000
+ ]
+}

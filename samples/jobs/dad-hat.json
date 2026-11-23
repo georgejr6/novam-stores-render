@@ -1,15 +1,14 @@
 {
+ "v": 2,
+ "scene": 2,
  "type": "dad-hat",
+ "providerProductId": 206,
  "placement": "embroidery_front_large",
- "printArea": {
-  "w": 1650,
-  "h": 600,
-  "dpi": 300
- },
  "colors": [
   {
-   "name": "Black",
-   "hex": "#111111",
+   "name": "Navy",
+   "hex": "#182031",
+   "variantId": 7857,
    "shots": [
     "flat",
     "angle",
@@ -18,14 +17,13 @@
    ]
   }
  ],
- "logoPath": "../sample-logo.png",
+ "logoUrl": "https://raw.githubusercontent.com/georgejr6/novam-stores-render/master/samples/sol-atlas-mark.png",
  "brand": {
-  "accent": "#E4572E",
-  "ink": "#1D2A3A"
+  "accent": "#e4572e",
+  "ink": "#1d2a3a"
  },
  "size": [
-  1200,
-  1500
- ],
- "samples": 24
+  1000,
+  1000
+ ]
 }

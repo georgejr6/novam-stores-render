@@ -1,31 +1,26 @@
 {
+ "v": 2,
+ "scene": 2,
  "type": "mug",
+ "providerProductId": 19,
  "placement": "default",
- "printArea": {
-  "w": 2700,
-  "h": 1050,
-  "dpi": 300
- },
  "colors": [
   {
    "name": "White",
-   "hex": "#FFFFFF",
+   "hex": "#cccccc",
+   "variantId": 1320,
    "shots": [
-    "flat",
-    "angle",
-    "detail",
-    "styled"
+    "flat"
    ]
   }
  ],
- "logoPath": "../sample-logo.png",
+ "logoUrl": "https://raw.githubusercontent.com/georgejr6/novam-stores-render/master/samples/sol-atlas-on-light.png",
  "brand": {
-  "accent": "#E4572E",
-  "ink": "#1D2A3A"
+  "accent": "#e4572e",
+  "ink": "#1d2a3a"
  },
  "size": [
-  1200,
-  1500
- ],
- "samples": 24
+  1000,
+  1000
+ ]
 }
