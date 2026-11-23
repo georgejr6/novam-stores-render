@@ -1,0 +1,74 @@
+name: render
+on:
+  schedule:
+    - cron: "*/10 * * * *" # poll the store API for queued render jobs (free on a public repo)
+  workflow_dispatch:
+    inputs:
+      samples:
+        description: "Sample jobs to render (comma list from samples/jobs, e.g. tee,mug). Empty = poll the API."
+        required: false
+        default: ""
+concurrency:
+  group: render
+  cancel-in-progress: false
+env:
+  BLENDER_VERSION: "4.2.5"
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - name: Claim jobs
+        id: claim
+        if: ${{ github.event.inputs.samples == '' }}
+        env:
+          RENDER_API_BASES: ${{ vars.RENDER_API_BASES }}
+          RENDER_WORKER_SECRET: ${{ secrets.RENDER_WORKER_SECRET }}
+        run: python worker/poll.py claim work
+      - name: Decide
+        id: need
+        env:
+          SAMPLES: ${{ github.event.inputs.samples }}
+          CLAIMED: ${{ steps.claim.outputs.count }}
+        run: |
+          if [ -n "$SAMPLES" ] || { [ -n "$CLAIMED" ] && [ "$CLAIMED" != "0" ]; }; then echo "go=1" >> "$GITHUB_OUTPUT"; fi
+      - name: Cache Blender
+        if: steps.need.outputs.go == '1'
+        uses: actions/cache@v4
+        with:
+          path: blender-dist
+          key: blender-${{ env.BLENDER_VERSION }}-linux-x64
+      - name: Install Blender
+        if: steps.need.outputs.go == '1'
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq libxi6 libxxf86vm1 libxfixes3 libxrender1 libgl1 libxkbcommon0 libsm6 libegl1 libxkbcommon-x11-0 > /dev/null
+          if [ ! -x blender-dist/blender ]; then
+            mkdir -p blender-dist
+            curl -sL "https://download.blender.org/release/Blender${BLENDER_VERSION%.*}/blender-${BLENDER_VERSION}-linux-x64.tar.xz" | tar -xJ --strip-components=1 -C blender-dist
+          fi
+          echo "BLENDER=$PWD/blender-dist/blender" >> "$GITHUB_ENV"
+      - name: Render samples
+        if: github.event.inputs.samples != ''
+        env:
+          SAMPLES: ${{ github.event.inputs.samples }}
+        run: |
+          for s in $(echo "$SAMPLES" | tr ',' ' '); do
+            python worker/render_job.py "samples/jobs/$s.json" out
+          done
+      - name: Render claimed jobs
+        if: github.event.inputs.samples == '' && steps.need.outputs.go == '1'
+        env:
+          RENDER_API_BASES: ${{ vars.RENDER_API_BASES }}
+          RENDER_WORKER_SECRET: ${{ secrets.RENDER_WORKER_SECRET }}
+        run: python worker/poll.py render work
+      - uses: actions/upload-artifact@v4
+        if: always() && github.event.inputs.samples != ''
+        with:
+          name: renders
+          path: out/*.png

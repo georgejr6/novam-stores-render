@@ -1,0 +1,31 @@
+{
+ "type": "poster",
+ "placement": "default",
+ "printArea": {
+  "w": 4962,
+  "h": 3507,
+  "dpi": 300
+ },
+ "colors": [
+  {
+   "name": "White",
+   "hex": "#F6F4EE",
+   "shots": [
+    "flat",
+    "angle",
+    "detail",
+    "styled"
+   ]
+  }
+ ],
+ "logoPath": "../sample-logo.png",
+ "brand": {
+  "accent": "#E4572E",
+  "ink": "#1D2A3A"
+ },
+ "size": [
+  1200,
+  1500
+ ],
+ "samples": 40
+}

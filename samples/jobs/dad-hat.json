@@ -1,0 +1,31 @@
+{
+ "type": "dad-hat",
+ "placement": "embroidery_front_large",
+ "printArea": {
+  "w": 1650,
+  "h": 600,
+  "dpi": 300
+ },
+ "colors": [
+  {
+   "name": "Black",
+   "hex": "#111111",
+   "shots": [
+    "flat",
+    "angle",
+    "detail",
+    "styled"
+   ]
+  }
+ ],
+ "logoPath": "../sample-logo.png",
+ "brand": {
+  "accent": "#E4572E",
+  "ink": "#1D2A3A"
+ },
+ "size": [
+  1200,
+  1500
+ ],
+ "samples": 40
+}

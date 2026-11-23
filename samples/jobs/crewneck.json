@@ -1,0 +1,35 @@
+{
+ "type": "crewneck",
+ "placement": "front",
+ "printArea": {
+  "w": 1800,
+  "h": 2400,
+  "dpi": 150
+ },
+ "colors": [
+  {
+   "name": "Navy",
+   "hex": "#1F2A44",
+   "shots": [
+    "flat",
+    "angle",
+    "detail",
+    "styled",
+    "label"
+   ]
+  }
+ ],
+ "logoPath": "../sample-logo.png",
+ "brand": {
+  "accent": "#E4572E",
+  "ink": "#1D2A3A"
+ },
+ "size": [
+  1200,
+  1500
+ ],
+ "samples": 40,
+ "labelPath": "../sample-label.png",
+ "labelWIn": 3.0,
+ "labelHIn": 1.13
+}
