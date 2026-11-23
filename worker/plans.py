@@ -83,7 +83,7 @@ PLANS = {
         "shots": {
             "flat": ("Flat", "Front"),
             "angle": ("Flat", "Right Front"),
-            "detail": ("Flat Lifestyle", "Right Front"),
+            "detail": ("Flat", "Left Front"),
             "styled": ("Flat Lifestyle", "Front"),
         },
     },
