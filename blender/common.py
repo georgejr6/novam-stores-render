@@ -46,7 +46,7 @@ def mat_fabric(name, hexcol, rough=0.9, sheen=0.35, bump=0.35, grain=700.0):
     b = nt.nodes["Principled BSDF"]
     b.inputs["Base Color"].default_value = (*hex_rgb(hexcol), 1.0)
     setin(b, "Roughness", rough)
-    setin(b, "Sheen Weight", sheen)
+    setin(b, "Sheen Weight", sheen * (0.25 + 0.75 * min(1.0, lum(hexcol) * 2.0)))  # dark cloth stays dark
     setin(b, "Sheen Roughness", 0.5)
     tc = nt.nodes.new("ShaderNodeTexCoord")
     noise = nt.nodes.new("ShaderNodeTexNoise")

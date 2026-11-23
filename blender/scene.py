@@ -180,11 +180,11 @@ def shot_camera(P, shot, lo, hi, kind):
     az = lambda deg, el: (math.sin(math.radians(deg)) * math.cos(math.radians(el)), -math.cos(math.radians(deg)) * math.cos(math.radians(el)), math.sin(math.radians(el)))  # noqa: E731
     cam_d.dof.use_dof = False
     if shot == "flat":
-        C.frame_camera(cam, bpy.context.scene, center, az(0, 3 if floor else 0), pts, lens=85, margin=0.1 if not floor else 0.14)
+        C.frame_camera(cam, bpy.context.scene, center, az(0, 3 if floor else 0), pts, lens=85, margin=0.1 if not floor else 0.07)
     elif shot == "angle":
-        C.frame_camera(cam, bpy.context.scene, center, az(34, 22 if floor else 9), pts, lens=60, margin=0.1 if not floor else 0.12)
+        C.frame_camera(cam, bpy.context.scene, center, az(34, 22 if floor else 9), pts, lens=60, margin=0.1 if not floor else 0.07)
     elif shot == "styled":
-        C.frame_camera(cam, bpy.context.scene, center, az(-20, 16 if floor else 6), pts, lens=50, margin=0.12 if not floor else 0.16)
+        C.frame_camera(cam, bpy.context.scene, center, az(-20, 16 if floor else 6), pts, lens=50, margin=0.12 if not floor else 0.09)
     elif shot == "detail":
         w_in, h_in, cx, cz = P.logo_box
         dc = P.decal

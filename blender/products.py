@@ -49,9 +49,31 @@ def _smooth_poly(poly, passes=2):
     return chaikin(poly, passes)
 
 
-def _rect(cx, cz, w, h, r=0.25):
-    pts = [(cx - w / 2, cz - h / 2), (cx + w / 2, cz - h / 2), (cx + w / 2, cz + h / 2), (cx - w / 2, cz + h / 2)]
-    return chaikin(pts, 3) if r else pts
+def _rect(cx, cz, w, h, r=0.3):
+    """Rounded rectangle outline (corner radius r in inches)."""
+    r = min(r, w / 2 - 0.01, h / 2 - 0.01)
+    pts = []
+    for ccx, ccz, a0 in ((cx + w / 2 - r, cz + h / 2 - r, 0), (cx - w / 2 + r, cz + h / 2 - r, 90), (cx - w / 2 + r, cz - h / 2 + r, 180), (cx + w / 2 - r, cz - h / 2 + r, 270)):
+        for k in range(0, 7):
+            a = math.radians(a0 + 90 * k / 6)
+            pts.append((ccx + r * math.cos(a), ccz + r * math.sin(a)))
+    return pts
+
+
+def _cuff(mat, outer, inner, sgn, length=2.6):
+    """A ribbed cuff band across the sleeve end: `outer`/`inner` are the sleeve end corners (x, z) of the +X sleeve."""
+    dx, dz = inner[0] - outer[0], inner[1] - outer[1]
+    width = math.hypot(dx, dz)
+    ux, uz = dx / width, dz / width
+    nx, nz = uz, -ux  # along the sleeve, toward the shoulder (positive z)
+    if nz < 0:
+        nx, nz = -nx, -nz
+    mx, mz = (outer[0] + inner[0]) / 2 + nx * length / 2, (outer[1] + inner[1]) / 2 + nz * length / 2
+    c = make_sheet("cuff", _rect(0, 0, width, length, 0.4), thick_in=0.4, voxel_in=0.1, inflate_in=0.45, wrinkle_in=0.02, mat=mat, edge_in=1.0, smooth=3)
+    ang = math.atan2(uz, ux)  # in-plane angle of the cuff's long axis (+X sleeve)
+    c.rotation_euler[1] = -ang if sgn > 0 else ang
+    c.location = (sgn * mx * S, -0.7 * S, mz * S)
+    return c
 
 
 def _shift_y(o, y_in):
@@ -80,7 +102,7 @@ def build_tee(color, long_sleeve=False, heavy=False):
     P.objs.append(body)
     P.target = body
     # collar: ribbed band along the front neckline
-    neck = [(-3.9, 26.7), (-3.3, 25.0), (-1.9, 24.0), (0, 23.75), (1.9, 24.0), (3.3, 25.0), (3.9, 26.7)]
+    neck = [(-3.7, 26.1), (-3.2, 25.0), (-1.9, 24.0), (0, 23.75), (1.9, 24.0), (3.2, 25.0), (3.7, 26.1)]
     ctrl = [(x, -0.55 - 0.75, z) for x, z in neck]
     P.objs.append(make_cord("collar", smooth_curve(ctrl, 56), 0.42, rib, flatten=0.55))
     back = _label_back_neck(P, [(-3.9, 26.8), (-3.3, 25.0), (-1.9, 23.9), (0, 23.7), (1.9, 23.9), (3.3, 25.0), (3.9, 26.8), (0, 27.4)], mat_fabric("inner", mix_hex(color, "#000000", 0.18), grain=700), 26.3)
@@ -105,7 +127,7 @@ def build_crewneck(color):
     body = make_sheet("body", _smooth_poly(poly), thick_in=0.7, voxel_in=0.15, inflate_in=1.1, mat=fab, seed=5)
     P.objs.append(body)
     P.target = body
-    neck = [(-4.1, 27.2), (-3.4, 25.3), (-2.0, 24.2), (0, 23.8), (2.0, 24.2), (3.4, 25.3), (4.1, 27.2)]
+    neck = [(-3.9, 26.6), (-3.4, 25.3), (-2.0, 24.2), (0, 23.8), (2.0, 24.2), (3.4, 25.3), (3.9, 26.6)]
     ctrl = [(x, -0.7 - 1.0, z) for x, z in neck]
     P.objs.append(make_cord("collar", smooth_curve(ctrl, 56), 0.6, rib, flatten=0.55))
     _label_back_neck(P, [(-4.0, 27.5), (-3.4, 25.1), (-2.0, 24.0), (0, 23.7), (2.0, 24.0), (3.4, 25.1), (4.0, 27.5), (0, 28.1)], mat_fabric("inner", mix_hex(color, "#000000", 0.18), grain=560), 26.3)
@@ -113,11 +135,7 @@ def build_crewneck(color):
     _shift_y(h, -0.5)
     P.objs.append(h)
     for sgn in (1, -1):  # cuffs
-        c = make_sheet("cuff", _rect(0, 0, 4.6, 2.6), thick_in=0.4, voxel_in=0.13, inflate_in=0.4, wrinkle_in=0.02, mat=rib, edge_in=1.0, smooth=1)
-        ang = math.atan2(21.4 - 17.2, 6.6 - 4.8)  # sleeve end direction
-        c.rotation_euler[1] = sgn * math.radians(-66)
-        c.location = (sgn * 19.3 * S, -0.6 * S, 5.7 * S)
-        P.objs.append(c)
+        P.objs.append(_cuff(rib, (21.4, 6.6), (17.2, 4.8), sgn))
     P.anchor = (0.0, 22.6)
     P.notes.append("anchor_top")
     return P
@@ -154,10 +172,7 @@ def build_hoodie(color):
     _shift_y(h, -0.6)
     P.objs.append(h)
     for sgn in (1, -1):
-        c = make_sheet("cuff", _rect(0, 0, 4.6, 2.6), thick_in=0.4, voxel_in=0.13, inflate_in=0.4, wrinkle_in=0.02, mat=rib, edge_in=1.0, smooth=1)
-        c.rotation_euler[1] = sgn * math.radians(-66)
-        c.location = (sgn * 19.5 * S, -0.7 * S, 5.4 * S)
-        P.objs.append(c)
+        P.objs.append(_cuff(rib, (21.6, 6.2), (17.3, 4.4), sgn))
     cord = mat_plain("cord", "#E8E3D8", rough=0.7)
     for sgn in (1, -1):
         pts = smooth_curve([(sgn * 1.6, -1.9, 24.4), (sgn * 1.9, -2.0, 21.0), (sgn * 1.8, -2.0, 17.4), (sgn * 2.2, -2.0, 14.0)], 30)
@@ -172,7 +187,7 @@ def build_hoodie(color):
 def build_tote(color):
     P = Product("tote", height_in=25.0)
     fab = mat_fabric("canvas", color, grain=380, bump=0.55, rough=0.92)
-    poly = _rect(0, 8.0, 15.0, 16.0, r=0.1)
+    poly = _rect(0, 8.0, 15.0, 16.0, r=0.9)
     body = make_sheet("body", poly, thick_in=1.0, voxel_in=0.15, inflate_in=0.9, wrinkle_in=0.3, mat=fab, edge_in=2.6, seed=11)
     P.objs.append(body)
     P.target = body
