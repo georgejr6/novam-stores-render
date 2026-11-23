@@ -61,7 +61,7 @@ def reset_scene(size, samples):
         sc.view_settings.look = "None"
     except TypeError:
         pass
-    sc.view_settings.exposure = float(JOB.get("exposure", -0.2))
+    sc.view_settings.exposure = float(JOB.get("exposure", -0.8))
     return sc
 
 
@@ -72,7 +72,10 @@ def pick_backdrop(garment_hex):
         acc = brand.get("accent")
         bd = C.mix_hex(acc, "#FFFFFF", 0.84) if acc else "#E9E4DA"
     if abs(C.lum(bd) - C.lum(garment_hex)) < 0.26:
-        bd = "#202124" if C.lum(garment_hex) > 0.45 else "#ECE8DF"
+        if C.lum(garment_hex) > 0.45:  # light product: a deep tone of the brand accent
+            bd = C.mix_hex(brand.get("accent") or "#6B6F76", "#121212", 0.72)
+        else:
+            bd = "#ECE8DF"
     return bd
 
 
@@ -214,6 +217,7 @@ def render_color(color):
     place_label(P)
     bpy.context.view_layer.update()
     lo, hi = C.bbox_world([o for o in P.objs])
+    print("BBOX", JOB["type"], tuple(round(v, 3) for v in lo), tuple(round(v, 3) for v in hi), [(o.name, tuple(round(v,2) for v in o.dimensions)) for o in P.objs])
     backdrop = pick_backdrop(hexcol)
     wall_y = hi.y + P.wall_gap_m
     floor_z = 0.0 if P.on_floor else lo.z - 0.9

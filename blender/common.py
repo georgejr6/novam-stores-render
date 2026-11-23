@@ -192,7 +192,7 @@ def apply_mod(o, mod):
     bpy.ops.object.modifier_apply(modifier=mod.name)
 
 
-def make_sheet(name, outline_in, thick_in=0.5, voxel_in=0.14, inflate_in=0.9, wrinkle_in=0.22, mat=None, seed=1, edge_in=3.5, smooth=3):
+def make_sheet(name, outline_in, thick_in=0.5, voxel_in=0.14, inflate_in=0.9, wrinkle_in=0.22, mat=None, seed=1, edge_in=3.5, smooth=5):
     """A pillow-shaped fabric piece in the XZ plane (front faces -Y) from an outline in inches.
 
     Flat polygon -> solidify -> voxel remesh (even quads) -> push each vertex out by a smooth function of its distance

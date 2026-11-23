@@ -28,7 +28,7 @@
   1200,
   1500
  ],
- "samples": 40,
+ "samples": 24,
  "labelPath": "../sample-label.png",
  "labelWIn": 3.0,
  "labelHIn": 1.13

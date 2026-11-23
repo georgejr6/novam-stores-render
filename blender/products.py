@@ -31,9 +31,9 @@ class Product:
     notes: list = field(default_factory=list)
 
 
-def _poly_tee(width=10.0, sleeve_end=(16.4, 20.4, 14.8, 17.4)):
+def _poly_tee(width=10.0, sleeve_end=(17.6, 19.2, 15.4, 15.2)):
     ox, oz, ix, iz = sleeve_end
-    right = [(0, 24.3), (1.9, 24.0), (3.3, 25.2), (3.9, 27.5), (9.6, 26.4), (10.7, 25.6), (ox, oz), (ix, iz), (10.0, 17.9), (width, 16.5), (width, 0.0), (0, 0.0)]
+    right = [(0, 24.3), (1.9, 24.0), (3.3, 25.0), (3.9, 26.6), (9.4, 25.9), (10.6, 25.0), (ox, oz), (ix, iz), (10.0, 16.8), (width, 15.6), (width, 0.0), (0, 0.0)]
     return mirror_poly(right)
 
 
@@ -60,7 +60,7 @@ def _shift_y(o, y_in):
 
 def _label_back_neck(P, shape_pts, mat, z_center):
     """The inside back of the collar, seen through the neck opening. The label is placed on it by the scene."""
-    back = make_sheet("backneck", chaikin(shape_pts, 2), thick_in=0.2, voxel_in=0.2, inflate_in=0.2, wrinkle_in=0.05, mat=mat, edge_in=1.5, smooth=1)
+    back = make_sheet("backneck", chaikin(shape_pts, 2), thick_in=0.2, voxel_in=0.07, inflate_in=0.2, wrinkle_in=0.03, mat=mat, edge_in=1.5, smooth=6)
     _shift_y(back, 0.55)
     P.objs.append(back)
     P.label_center = (0.0, z_center)
@@ -76,24 +76,23 @@ def build_tee(color, long_sleeve=False, heavy=False):
         P.height_in = 28.0
     else:
         poly = _poly_tee()
-    body = make_sheet("body", _smooth_poly(poly), thick_in=0.55, voxel_in=0.14, inflate_in=0.9, mat=fab, seed=3)
+    body = make_sheet("body", _smooth_poly(poly), thick_in=0.55, voxel_in=0.1, inflate_in=0.9, mat=fab, seed=3)
     P.objs.append(body)
     P.target = body
     # collar: ribbed band along the front neckline
-    neck = [(-3.9, 27.5), (-3.3, 25.2), (-1.9, 24.0), (0, 23.75), (1.9, 24.0), (3.3, 25.2), (3.9, 27.5)]
-    ctrl = [(x, -0.55 - 0.9, z) for x, z in neck]
+    neck = [(-3.9, 26.7), (-3.3, 25.0), (-1.9, 24.0), (0, 23.75), (1.9, 24.0), (3.3, 25.0), (3.9, 26.7)]
+    ctrl = [(x, -0.55 - 0.75, z) for x, z in neck]
     P.objs.append(make_cord("collar", smooth_curve(ctrl, 56), 0.42, rib, flatten=0.55))
-    back = _label_back_neck(P, [(-3.9, 27.7), (-3.3, 25.0), (-1.9, 23.9), (0, 23.7), (1.9, 23.9), (3.3, 25.0), (3.9, 27.7), (0, 28.2)], mat_fabric("inner", mix_hex(color, "#000000", 0.18), grain=700), 26.3)
+    back = _label_back_neck(P, [(-3.9, 26.8), (-3.3, 25.0), (-1.9, 23.9), (0, 23.7), (1.9, 23.9), (3.3, 25.0), (3.9, 26.8), (0, 27.4)], mat_fabric("inner", mix_hex(color, "#000000", 0.18), grain=700), 26.3)
     # hems
-    P.objs.append(_hem(poly, rib, long_sleeve))
+    P.objs.append(_hem(poly, rib, long_sleeve, 10.0))
     P.anchor = (0.0, 23.3)  # top of the print area, 1 in below the collar; centre is set by the scene from the area height
     P.notes.append("anchor_top")
     return P
 
 
-def _hem(poly, rib, long_sleeve):
-    w = max(x for x, _ in poly)
-    h = make_sheet("hem", _rect(0, 1.1, 2 * w - 0.2, 2.1), thick_in=0.3, voxel_in=0.13, inflate_in=0.35, wrinkle_in=0.02, mat=rib, edge_in=1.0, smooth=1)
+def _hem(poly, rib, long_sleeve, w=10.0):
+    h = make_sheet("hem", _rect(0, 1.1, 2 * w - 0.4, 2.1), thick_in=0.3, voxel_in=0.13, inflate_in=0.35, wrinkle_in=0.02, mat=rib, edge_in=1.0, smooth=1)
     _shift_y(h, -0.35)
     return h
 
@@ -253,7 +252,7 @@ def build_mug(color, mug_w_in=9.0, mug_h_in=3.5):
 def build_cap(color, flat=False, snap=False):
     P = Product("cap", on_floor=True, height_in=5.5, embroidery=True)
     P.wall_gap_m = 0.28
-    fab = mat_fabric("twill", color, grain=420, bump=0.5, rough=0.9)
+    fab = mat_fabric("twill", color, grain=420, bump=0.12, rough=0.9)
     # seam relief: 6 panels, a seam centred on the front
     m = fab
     nt = m.node_tree
@@ -310,19 +309,20 @@ def build_cap(color, flat=False, snap=False):
     bpy.ops.object.shade_smooth()
     P.objs.append(crown)
     P.target = crown
-    # brim: a fan of radius 3.9..6.9 in around the front, curved down at the edges (dad hat) or nearly flat (snapback)
-    n_u, n_v = 48, 10
+    # brim: a fan in front of the crown (+-72 deg), growing out from the crown's own ellipse, curved down at the edges
+    n_u, n_v = 40, 10
     bm = bmesh.new()
     rows = []
+    reach_y, reach_x = (3.3 if not flat else 3.0), 1.5
     for j in range(n_v + 1):
-        r = 3.8 + (6.9 - 3.8) * j / n_v
+        t = j / n_v
         row = []
         for i in range(n_u + 1):
-            a = math.radians(-100 + 200 * i / n_u)  # centred on -Y
-            x, y = r * math.sin(a) * 0.98, -r * math.cos(a)
-            drop = (0.22 if flat else 0.9) * ((r - 3.8) / 3.1) ** 1.4 * (0.35 + 1.1 * abs(math.sin(a))) + (0.0 if flat else 0.35 * ((r - 3.8) / 3.1) * abs(math.sin(a)))
-            tilt = 0.0 if flat else 0.35 * (r - 3.8) / 3.1
-            row.append(bm.verts.new((x * S, y * S, (0.1 - drop - 0.0 * tilt) * S)))
+            a = math.radians(-72 + 144 * i / n_u)
+            x = (rx + t * reach_x) * math.sin(a)
+            y = -(ry + t * reach_y) * math.cos(a)
+            curve = 0.0 if flat else (0.55 * t * t + 0.5 * t * t * abs(math.sin(a)))
+            row.append(bm.verts.new((x * S, y * S, (0.12 - curve - (0.1 * t if flat else 0.0)) * S)))
         rows.append(row)
     for j in range(n_v):
         for i in range(n_u):
