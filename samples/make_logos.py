@@ -39,3 +39,42 @@ def draw(ink, name):
 
 draw((29, 42, 58, 255), "sol-atlas-on-light.png")
 draw(CREAM, "sol-atlas-on-dark.png")
+
+
+def sun(d, cx, cy, r, ink_ring=CREAM):
+    d.ellipse([cx - r, cy - r, cx + r, cy + r], fill=ORANGE)
+    r2, r3 = int(r * 0.72), int(r * 0.66)
+    d.ellipse([cx - r2, cy - r2, cx + r2, cy + r2], fill=ink_ring)
+    d.ellipse([cx - r3, cy - r3, cx + r3, cy + r3], fill=ORANGE)
+    for i in range(16):
+        a = math.radians(i * 22.5)
+        ln = 0.19 if i % 2 == 0 else 0.12
+        d.line([cx + r * 1.18 * math.cos(a), cy + r * 1.18 * math.sin(a), cx + r * (1.18 + ln * 2.1) * math.cos(a), cy + r * (1.18 + ln * 2.1) * math.sin(a)], fill=ORANGE, width=int(r * 0.09))
+    d.text((cx, cy + 3), "SA", font=ImageFont.truetype(FONT, int(r * 0.62)), fill=ink_ring, anchor="mm")
+
+
+def mark(name, ring):
+    """Emblem only (no tagline): what embroidery and small placements need."""
+    w = 1800
+    im = Image.new("RGBA", (w * S, w * S), (0, 0, 0, 0))
+    sun(ImageDraw.Draw(im), w * S // 2, w * S // 2, int(w * S * 0.28), ring)
+    im = im.resize((w, w), Image.LANCZOS)
+    im.crop(im.getbbox()).save(OUT / name)
+
+
+mark("sol-atlas-mark.png", CREAM)
+
+
+def poster(name):
+    """Poster artwork: the brand sun on warm paper, 18x24 in at 200 dpi."""
+    pw, ph = 3600, 4800
+    im = Image.new("RGBA", (pw * S, ph * S), (244, 232, 212, 255))
+    d = ImageDraw.Draw(im)
+    sun(d, pw * S // 2, int(ph * S * 0.38), int(pw * S * 0.24))
+    d.text((pw * S // 2, int(ph * S * 0.74)), "SOL ATLAS", font=ImageFont.truetype(FONT, int(pw * S * 0.13)), fill=(29, 42, 58, 255), anchor="mm")
+    d.text((pw * S // 2, int(ph * S * 0.82)), "SUNDAY GOODS CO.", font=ImageFont.truetype(FONT, int(pw * S * 0.045)), fill=ORANGE, anchor="mm")
+    d.rectangle([int(pw * S * 0.06), int(ph * S * 0.04), int(pw * S * 0.94), int(ph * S * 0.96)], outline=(29, 42, 58, 255), width=int(pw * S * 0.004))
+    im.resize((pw, ph), Image.LANCZOS).convert("RGB").save(OUT / name)
+
+
+poster("sol-atlas-poster.png")
