@@ -9,6 +9,7 @@ import ipaddress
 import json
 import os
 import pathlib
+import re
 import shutil
 import socket
 import sys
@@ -49,7 +50,7 @@ def absolute_logo_url(url: str, base: str | None) -> str:
     if url.startswith("/") and base:
         url = base.rstrip("/") + url
     u = urllib.parse.urlsplit(url)
-    if u.scheme != "https" or not u.hostname or u.username or u.password or not _public_host(u.hostname):
+    if u.scheme != "https" or not u.hostname or u.username or u.password or u.port not in (None, 443) or not _public_host(u.hostname):
         raise ValueError("only public https image URLs are accepted")
     return url
 
@@ -96,6 +97,8 @@ def validate_recipe(recipe: dict) -> dict:
     for c in colors:
         if not isinstance(c.get("variantId"), int) or c["variantId"] <= 0:
             raise ValueError("every colour needs a provider variant id")
+        if not c.get("shots"):
+            raise ValueError("every colour needs at least one shot")
         bad = [s for s in c.get("shots", []) if s not in plan["shots"]]
         if bad:
             raise ValueError(f"shots not available for {recipe['type']}: {', '.join(bad)}")
@@ -146,7 +149,7 @@ def render_recipe(recipe: dict, work: pathlib.Path, base: str | None = None, *, 
             img = Image.open(io.BytesIO(raw)).convert("RGB")
             if img.size != OUT_SIZE:
                 img = img.resize(OUT_SIZE, Image.LANCZOS)
-            png = work / f"{recipe['type']}__{color['name'].lower().replace(' ', '-')}__{shot}.png"
+            png = work / f"{recipe['type']}__{re.sub(r'[^a-z0-9-]+', '-', color['name'].lower()).strip('-') or 'color'}__{shot}.png"
             img.save(png)
             results.append({"color": color["name"], "shot": shot, "seconds": int(time.time() - t0), "webp": to_webp(img), "png": png})
     return results

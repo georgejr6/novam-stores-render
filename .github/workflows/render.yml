@@ -1,7 +1,5 @@
 name: render
 on:
-  push:
-    paths: [".github/workflows/render.yml"]
   schedule:
     - cron: "*/10 * * * *" # poll the store API for queued render jobs (free on a public repo)
   workflow_dispatch:
@@ -45,7 +43,7 @@ jobs:
           SAMPLES: ${{ github.event.inputs.samples }}
           PRINTFUL_API_TOKEN: ${{ secrets.PRINTFUL_API_TOKEN }}
         run: |
-          printf '%s' "$SAMPLES" | grep -Eq '^[a-z0-9,-]+$' || { echo "bad samples list"; exit 1; }
+          [[ "$SAMPLES" =~ ^[a-z0-9,-]+$ ]] || { echo "bad samples list"; exit 1; }
           set -f
           for s in $(printf '%s' "$SAMPLES" | tr ',' ' '); do
             python worker/render_job.py "samples/jobs/$s.json" out

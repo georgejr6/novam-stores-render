@@ -33,7 +33,18 @@ def _token() -> str:
     return t
 
 
+class _NoRedirect(urllib.request.HTTPRedirectHandler):
+    def redirect_request(self, *a, **k):  # never forward the token (or follow a download) to another URL
+        return None
+
+
+_OPENER = urllib.request.build_opener(_NoRedirect)
+_ALLOWED = re.compile(r"^/v2/(mockup-tasks(\?id=\d+)?|catalog-products/\d+/mockup-styles\?limit=\d+&offset=\d+)$")
+
+
 def request(method: str, path: str, body: dict | None = None, *, sleep=time.sleep) -> dict:
+    if not _ALLOWED.match(path):  # mockup generation only: no orders, files or sync, even by a later edit
+        raise PrintfulError("path not allowed for the render worker")
     data = json.dumps(body).encode() if body is not None else None
     last = ""
     for attempt in range(6):
@@ -42,7 +53,7 @@ def request(method: str, path: str, body: dict | None = None, *, sleep=time.slee
         req.add_header("Content-Type", "application/json")
         req.add_header("User-Agent", "novam-stores-render/2")
         try:
-            with urllib.request.urlopen(req, timeout=60) as r:
+            with _OPENER.open(req, timeout=60) as r:
                 return json.loads(r.read() or b"{}")
         except urllib.error.HTTPError as e:
             text = e.read().decode("utf-8", "replace")[:600]
@@ -103,17 +114,16 @@ def create_task(product_id: int, variant_id: int, placement: str, technique: str
 
 
 def wait_task(task_id: int, *, sleep=time.sleep, timeout: int = POLL_TIMEOUT) -> dict:
-    waited = 0
+    deadline = time.monotonic() + timeout
     while True:
         t = request("GET", f"/v2/mockup-tasks?id={int(task_id)}")["data"][0]
         if t.get("status") == "completed":
             return t
         if t.get("status") == "failed":
             raise PrintfulError("mockup task failed: " + json.dumps(t.get("failure_reasons"))[:400])
-        if waited >= timeout:
+        if time.monotonic() >= deadline:
             raise PrintfulError("mockup task timed out")
         sleep(POLL_SECONDS)
-        waited += POLL_SECONDS
 
 
 def mockups_by_style(task: dict, placement: str) -> dict[int, str]:
@@ -133,7 +143,7 @@ def download(url: str) -> bytes:
     u = urllib.parse.urlsplit(url)
     if u.scheme != "https" or not u.hostname or not _HOST.search(u.hostname) or u.username or u.password:
         raise PrintfulError("unexpected mockup URL host")
-    with urllib.request.urlopen(urllib.request.Request(url, headers={"User-Agent": "novam-stores-render/2"}), timeout=60) as r:
+    with _OPENER.open(urllib.request.Request(url, headers={"User-Agent": "novam-stores-render/2"}), timeout=60) as r:
         data = r.read(MAX_IMAGE_BYTES + 1)
     if len(data) > MAX_IMAGE_BYTES:
         raise PrintfulError("mockup image too large")

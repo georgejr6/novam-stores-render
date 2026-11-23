@@ -158,7 +158,14 @@ class Client(unittest.TestCase):
     def test_token_is_required(self):
         os.environ.pop("PRINTFUL_API_TOKEN", None)
         with self.assertRaisesRegex(printful.PrintfulError, "not set"):
-            printful.request("GET", "/v2/x")
+            printful.request("GET", "/v2/mockup-tasks?id=1")
+
+    def test_only_mockup_endpoints_are_reachable(self):
+        os.environ["PRINTFUL_API_TOKEN"] = "t"
+        for bad in ["/orders", "/v2/orders", "/files", "/v2/mockup-tasks/../orders"]:
+            with self.assertRaisesRegex(printful.PrintfulError, "not allowed"):
+                printful.request("GET", bad)
+        os.environ.pop("PRINTFUL_API_TOKEN", None)
 
     def test_retries_on_429_then_succeeds(self):
         os.environ["PRINTFUL_API_TOKEN"] = "t"
@@ -183,8 +190,8 @@ class Client(unittest.TestCase):
             return R()
 
         waits = []
-        with mock.patch("urllib.request.urlopen", fake):
-            self.assertEqual(printful.request("GET", "/v2/x", sleep=waits.append), {"data": []})
+        with mock.patch.object(printful._OPENER, "open", fake):
+            self.assertEqual(printful.request("GET", "/v2/mockup-tasks?id=1", sleep=waits.append), {"data": []})
         self.assertEqual((len(calls), waits), (3, [1, 1]))
         os.environ.pop("PRINTFUL_API_TOKEN", None)
 
