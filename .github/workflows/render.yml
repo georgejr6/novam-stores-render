@@ -10,6 +10,8 @@ on:
         description: "Sample jobs to render (comma list from samples/jobs, e.g. tee,mug). Empty = poll the API."
         required: false
         default: ""
+permissions:
+  contents: read
 concurrency:
   group: render
   cancel-in-progress: false
@@ -52,7 +54,10 @@ jobs:
           sudo apt-get install -y -qq libxi6 libxxf86vm1 libxfixes3 libxrender1 libgl1 libxkbcommon0 libsm6 libegl1 libxkbcommon-x11-0 > /dev/null
           if [ ! -x blender-dist/blender ]; then
             mkdir -p blender-dist
-            curl -sL "https://download.blender.org/release/Blender${BLENDER_VERSION%.*}/blender-${BLENDER_VERSION}-linux-x64.tar.xz" | tar -xJ --strip-components=1 -C blender-dist
+            base="https://download.blender.org/release/Blender${BLENDER_VERSION%.*}"
+            curl -sSLO "$base/blender-${BLENDER_VERSION}-linux-x64.tar.xz"
+            curl -sSL "$base/blender-${BLENDER_VERSION}.sha256" | grep "blender-${BLENDER_VERSION}-linux-x64.tar.xz" | sha256sum -c -
+            tar -xJ --strip-components=1 -C blender-dist -f "blender-${BLENDER_VERSION}-linux-x64.tar.xz"
           fi
           echo "BLENDER=$PWD/blender-dist/blender" >> "$GITHUB_ENV"
       - name: Render samples
@@ -60,7 +65,9 @@ jobs:
         env:
           SAMPLES: ${{ github.event.inputs.samples }}
         run: |
-          for s in $(echo "$SAMPLES" | tr ',' ' '); do
+          printf '%s' "$SAMPLES" | grep -Eq '^[a-z0-9,-]+$' || { echo "bad samples list"; exit 1; }
+          set -f
+          for s in $(printf '%s' "$SAMPLES" | tr ',' ' '); do
             python worker/render_job.py "samples/jobs/$s.json" out
           done
       - name: Render claimed jobs

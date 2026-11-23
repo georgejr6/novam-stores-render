@@ -142,7 +142,9 @@ def place_label(P):
         h = w * lh / lw if abs(w * lh / lw - h) > 0.01 else h
     w = min(w, 3.2)
     d = C.make_decal_plane("label", w, h, P.label_center[0], -0.6, P.label_center[1], mat, res=40)
-    back = next(o for o in P.objs if o.name.startswith("backneck"))
+    back = next((o for o in P.objs if o.name.startswith("backneck")), None)
+    if back is None:
+        return None
     C.shrinkwrap_project(d, back, offset_m=0.0006)
     P.label_obj = d
     return d
@@ -227,7 +229,7 @@ def render_color(color):
     center = (lo + hi) / 2
     scale = max(0.5, min(1.6, (hi - lo).length * 1.2))
     base_lights = lights(JOB["type"], tuple(center), scale, backdrop)
-    out_dir = os.path.join(OUT, SLUG(name))
+    out_dir = os.path.join(OUT, f"{JOB['colors'].index(color)}-{SLUG(name)}")
     os.makedirs(out_dir, exist_ok=True)
     done = []
     for shot in color.get("shots", ["flat"]):

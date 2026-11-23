@@ -11,6 +11,7 @@ import pathlib
 import sys
 import traceback
 import urllib.error
+import urllib.parse
 import urllib.request
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
@@ -20,7 +21,7 @@ from signing import sign  # noqa: E402
 SECRET = os.environ.get("RENDER_WORKER_SECRET", "")
 BASES = [b.strip().rstrip("/") for b in os.environ.get("RENDER_API_BASES", "").split(",") if b.strip()]
 WORKER = os.environ.get("GITHUB_RUN_ID", "local")
-MAX_JOBS = int(os.environ.get("RENDER_MAX_JOBS", "2"))
+MAX_JOBS = int(os.environ.get("RENDER_MAX_JOBS", "1"))
 
 
 def call(base: str, path: str, body: bytes, headers: dict | None = None) -> dict:
@@ -64,13 +65,14 @@ def render(work: pathlib.Path) -> None:
         job = json.loads(f.read_text())
         base, jid, lease = job["base"], job["id"], job["leaseToken"]
         try:
-            results = render_recipe(job["recipe"], work / f.stem, base)
+            recipe = {k: v for k, v in job["recipe"].items() if k not in ("logoPath", "labelPath")}  # local paths are for samples only
+            results = render_recipe(recipe, work / f.stem, base)
             for r in results:
                 call(
                     base,
                     "/api/internal/render/upload",
                     r["webp"],
-                    {"Content-Type": "image/webp", "X-Render-Job": jid, "X-Render-Lease": lease, "X-Render-Color": r["color"], "X-Render-Shot": r["shot"], "X-Render-Seconds": str(r["seconds"])},
+                    {"Content-Type": "image/webp", "X-Render-Job": jid, "X-Render-Lease": lease, "X-Render-Color": urllib.parse.quote(r["color"], safe=""), "X-Render-Shot": r["shot"], "X-Render-Seconds": str(r["seconds"])},
                 )
             call(base, "/api/internal/render/complete", json.dumps({"jobId": jid, "lease": lease, "ok": True, "count": len(results)}).encode())
             print("done", jid, len(results), "images")
