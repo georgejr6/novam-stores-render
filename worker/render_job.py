@@ -121,6 +121,8 @@ def render_recipe(recipe: dict, work: pathlib.Path, base: str | None = None, *, 
             sid = printful.find_style(rows, plan["placement"], plan["area"], cat, view)
             if sid is None:
                 raise RuntimeError(f"provider has no '{cat} / {view}' photo for {recipe['type']} (shot {shot})")
+            if shot == "model" and sid != plan.get("model_pin"):
+                raise RuntimeError(f"model photo for {recipe['type']} changed at the provider (style {sid}); it needs a new review")
             wanted[shot] = sid
         cache = work / "cache"
         cache.mkdir(exist_ok=True)

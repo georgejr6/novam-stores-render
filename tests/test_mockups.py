@@ -50,6 +50,7 @@ class Plans(unittest.TestCase):
         for name, plan in PLANS.items():
             self.assertIn("flat", plan["shots"], name)
         self.assertEqual({n for n, p in PLANS.items() if "model" in p["shots"]}, {"tee", "hoodie", "crewneck"})
+        self.assertEqual({n: p["model_pin"] for n, p in PLANS.items() if "model" in p["shots"]}, {"tee": 798, "hoodie": 19737, "crewneck": 20456})
 
 
 class Gate(unittest.TestCase):

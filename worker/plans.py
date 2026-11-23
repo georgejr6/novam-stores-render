@@ -7,7 +7,9 @@ Rules baked in:
   * People: only styles reviewed as showing Black or Latino models are listed under "model" (never a white model). A type with
     no reviewed model style simply has no "model" shot. Everything else is garment/product only.
   * No inside labels / tags in these photos (labels are applied at fulfilment, and only when a brand has its own).
-  * The server (src/modules/renders/types.ts, RENDER_TYPES) lists the same shots per type. tests/test_plans.py pins the contract.
+  * The server (src/modules/renders/types.ts, RENDER_TYPES) lists the same shots per type; tests/test_mockups.py pins the model shots.
+  * Model photos are pinned by style id (`model_pin`): if the provider swaps the photo behind a name, the job fails instead of showing
+    an unreviewed person.
 
 Logo placement: the logo is fitted ("contain") into `box` (inches) of the print area `area` (inches), centred left to right;
 `top` is the offset from the top of the print area (None = centred vertically). Printful requires the layer aspect ratio to match
@@ -30,6 +32,7 @@ PLANS = {
             "styled": ("Flat Lifestyle", "Front"),
             "model": ("Men's 2", "Front"),  # reviewed: Black model
         },
+        "model_pin": 798,
     },
     "hoodie": {
         "productId": 380,
@@ -45,6 +48,7 @@ PLANS = {
             "styled": ("Flat, Premium", "Front"),
             "model": ("Women's 2", "Front"),  # reviewed: Black model
         },
+        "model_pin": 19737,
     },
     "crewneck": {
         "productId": 411,
@@ -59,6 +63,7 @@ PLANS = {
             "styled": ("Ghost", "Front"),
             "model": ("Men's 2", "Front"),  # reviewed: Black model
         },
+        "model_pin": 20456,
     },
     "tote": {
         "productId": 367,
